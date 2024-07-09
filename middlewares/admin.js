@@ -9,7 +9,8 @@ function adminMiddleware(req,res,next){ //you signin to the server with username
     const words = token.split(" "); //it makes the token split into two parts that is bearer , and then this part consists the token
     const jwtToken = words[1]; //index 1 is the token index o is the bearer
     const decodedValue = jwt.verify(jwtToken,secret);  //verifying the token with the secret see if the jwt token was signed by the user at the past that is what the secret is used for it is like the jwt password 
-    if(decodedValue.username){ //this means that whenver the token was created the username was encoded inside it
+    if(decodedValue.username){//this means that whenver the token was created the username was encoded inside it
+        req.username = decodeValue.username;
         next();
     } else {
         res.status(403).json({

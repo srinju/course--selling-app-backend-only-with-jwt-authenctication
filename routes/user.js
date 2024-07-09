@@ -1,0 +1,84 @@
+const {Router} = require("express");
+const userMiddleware = require("../middlewares/user");
+const {user,course } = require("../db/index");
+const router = Router();
+const jwt = require("jsonwebtoken");
+const JWT_SECRET = require("../index")
+
+router.post('/signup' ,async function(req,res){
+    const username  = req.body.username;
+    const password = req.body.password;
+
+    await user.create({
+        username,
+        password, 
+    });
+    res.json({
+        msg:"user created successfully"
+    });
+});
+
+router.post('/signin',async function(req,res){
+    const username = req.body.username;
+    const password = req.body.password;
+    const userexists = await user.find({
+        username,
+        password
+    });
+    if(userexists){
+        const token = jwt.sign({
+            username
+        },JWT_SECRET)
+        res.json({
+            token
+        });
+    } else {
+        res.status(411).json({
+            msg:"user dosent exists! , Please enter your username and password correctly"
+        });
+    }
+});
+
+router.get('/courses',async function(req,res){ //get all the courses the website is providing this doesent require any usermiddleware bcoz anyone can see all the available courses in the website
+    const allCourses = await course.find({}); //this will find all the courses that is present in the course database
+    res.json({
+        courses : allCourses
+    });
+});
+
+router.post('/courses/:courseId' , userMiddleware ,async function(req,res){ //user can purchase courses
+    const courseId = req.params.courseId;
+    const username = req.headers.username;
+
+    try{
+        await user.updateOne({
+            username
+        },{
+            "$push" : {
+                purchasedCourses : courseId
+            }
+        })
+    } catch(e) {
+        console.log(e);
+    }
+    res.json({
+        msg:"purchase completed!!"
+    });
+})
+
+router.get('/courses' , userMiddleware ,async function(req,res){ //to see which user has which courses purchased
+    const leri = await user.findOne({
+        username : req.headers.username
+    });
+    const courses = await course.find({
+        _id: {
+            "%in" : leri.purchasedCourses
+        }
+    });
+    res.json({
+        courses : courses
+    });
+});
+
+module.exports = router;
+

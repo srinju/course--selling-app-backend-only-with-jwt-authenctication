@@ -68,7 +68,7 @@ router.post('/courses/:courseId' , userMiddleware ,async function(req,res){ //us
 
 router.get('/courses' , userMiddleware ,async function(req,res){ //to see which user has which courses purchased
     const leri = await user.findOne({
-        username : req.headers.username
+        username : req.username
     });
     const courses = await course.find({
         _id: {

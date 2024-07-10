@@ -68,7 +68,7 @@ router.post('/courses/:courseId' , userMiddleware ,async function(req,res){ //us
 
 router.get('/courses' , userMiddleware ,async function(req,res){ //to see which user has which courses purchased
     const leri = await user.findOne({
-        username : req.username
+        username : req.username //we put here req.username because this is the username that is coming from the decoded jwt , we know that a middleware can transfer data from one middleware to another middleware that is what is happening here we are taking the decoded username and then we are requesting the username and obviously the username is the one that was stored in the jwt encoded
     });
     const courses = await course.find({
         _id: {
